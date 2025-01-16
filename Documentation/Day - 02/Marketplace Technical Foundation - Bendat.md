@@ -124,3 +124,7 @@ This document describes the overall design and interaction between components fo
 
 ## Workflow Diagram
 ![alt text](image.png)
+
+**Landing Page**
+
+![alt text](image-1.png)
