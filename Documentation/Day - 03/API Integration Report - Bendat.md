@@ -47,6 +47,22 @@ export default {
 };
 ```
 
+```bash
+export default {
+    name: 'location',
+    type: 'document',
+    title: 'Location',
+    fields: [
+        {
+            name: 'name',
+            type: 'string',
+            title: 'Location Name',
+        },
+    ]
+};
+```
+
+
 ![alt text](image-1.png)
 
 **Images Reflected in frontend**
