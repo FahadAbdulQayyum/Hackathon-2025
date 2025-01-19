@@ -3,7 +3,7 @@ import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { client } from '@/sanity/lib/client';
 
 interface Product {
-    id: number;
+    id: string;
     name: string;
 }
 
@@ -21,13 +21,19 @@ const initialState: ProductState = {
     error: null,
 };
 
+interface FetchedProduct {
+    _id: string;
+    post_title: string;
+    // ...other properties if needed...
+}
+
 export const fetchProducts = createAsyncThunk('product/fetchProducts', async () => {
     console.log('Fetching products...');
     const data = await client.fetch(`
         *[_type == 'post']{_id, post_title, post_description, post_image}
     `);
     console.log('Fetched data:', data);
-    return data.map((item: any) => ({
+    return data.map((item: FetchedProduct): Product => ({
         id: item._id,
         name: item.post_title,
     }));
