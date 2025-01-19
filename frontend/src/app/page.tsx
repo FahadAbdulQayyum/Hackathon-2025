@@ -39,7 +39,7 @@ export default Page
 //   const dispatch: AppDispatch = useDispatch(); // Use typed dispatch
 
 //   const { products, loading, error } = useSelector((state: RootState) => state.product);
-
+//
 //   useEffect(() => {
 //     dispatch(fetchProducts());
 //   }, [dispatch]);
