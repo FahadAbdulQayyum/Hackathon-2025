@@ -1,7 +1,9 @@
 "use client"
-import { client } from '@/sanity/lib/client'
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { fetchLocations } from '@/components/lib/features/location/locationSlice'
+
+import { useAppDispatch } from '@/components/lib/hooks'
 
 interface locationType {
     name: string
@@ -14,14 +16,13 @@ const Location = () => {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
+    const dispatch = useAppDispatch();
+
     useEffect(() => {
         const fetchLocation = async () => {
-            const fetchLocationData = await client.fetch(`
-                *[_type=='location']{ name }
-                `)
-            // console.log('fetched location data', fetchLocationData)
-            setLocation(fetchLocationData);
-            setFilteredLocation(fetchLocationData);
+            let data = await dispatch(fetchLocations())
+            setLocation(data.payload);
+            setFilteredLocation(data.payload);
         }
         fetchLocation();
     }, [])
@@ -44,7 +45,7 @@ const Location = () => {
     };
 
     return (
-        <div className="flex flex-col justify-center items-center h-screen ">
+        <div className="flex flex-col justify-center items-center h-screen bg-gray-400">
             <div className="relative flex items-center">
                 {loading && <div className="loader absolute left-0 ml-2 border-t-2 border-b-2 border-blue-500 rounded-full w-6 h-6 animate-spin"></div>}
                 <input
