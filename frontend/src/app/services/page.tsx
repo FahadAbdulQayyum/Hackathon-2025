@@ -3,10 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import { urlFor } from '@/sanity/lib/image';
-// import { client } from '@/sanity/lib/client';
 import { useSearchParams } from 'next/navigation'; // Change this import
-// import { useDispatch } from 'react-redux';
-// import { pushCart } from '@/components/lib/features/cart/cartSlice';
 
 import { useAppDispatch } from '@/components/lib/hooks'
 
@@ -47,30 +44,11 @@ const FetchingSanityData = () => {
     const { services } = useSelector((state: RootState) => state.service);
 
 
-    // const handleAddToCart = (productName: dataType) => {
-    //     dispatch(pushCart(productName));
-    // };
-
     useEffect(() => {
         const fetchFunction = async () => {
-            // const result = await dispatch(fetchServices())
-            // await dispatch(fetchServices())
             if (services.length === 0) {
                 await dispatch(fetchServices());
             }
-            // const data: dataType[] = await client.fetch(`
-            //     *[_type=='service']{
-            //         _id, 
-            //         name, 
-            //         variation, 
-            //         city_available, 
-            //         price, 
-            //         currently_offered, 
-            //         "pic": pic.asset->url
-            //     }
-            // `);
-            // const data: dataType[] = result.payload;
-            // console.log('data....', data)
             if (address !== null) {
                 const filteredData: dataType[] = services?.filter(service =>
                     service.city_available.split(',').some(city => address.toLowerCase().includes(city.trim().toLowerCase()))
@@ -82,10 +60,6 @@ const FetchingSanityData = () => {
             setLoading(false);
         };
         fetchFunction();
-        // }, [address]);
-        // }, [dispatch]);
-        // }, [services]);
-        // }, [dispatch, services]);
     }, [dispatch, services, address]);
 
     if (loading) {
