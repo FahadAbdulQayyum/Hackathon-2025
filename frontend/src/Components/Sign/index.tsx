@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from 'react';
 
+import { useToast } from "@/hooks/use-toast"
+
 interface SignProps {
     signup: boolean;
 }
@@ -20,7 +22,9 @@ const Sign: React.FC<SignProps> = ({ signup }) => {
     const signUpRef = useRef<HTMLInputElement>(null);
     const keepMeRef = useRef<HTMLInputElement>(null);
 
-    const sendToForm = (e: React.FormEvent<HTMLFormElement>) => {
+    const { toast } = useToast()
+
+    const sendToForm = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         // Access input field values using .current.value
         const formData = {
@@ -28,21 +32,63 @@ const Sign: React.FC<SignProps> = ({ signup }) => {
             password: passwordRef.current?.value || "",
             firstName: firstNameRef.current?.value || "",
             lastName: lastNameRef.current?.value || "",
-            dob: dobRef.current?.value || "",
-            gender: genderRef.current?.value || "",
             country: countryRef.current?.value || "",
+            dob: dobRef.current?.value || "",
+            // gender: genderRef.current?.value || "",
+            signUp: signUpRef.current?.checked || "",
+            gender
         };
 
         console.log("Form Data Submitted:", formData);
 
-        // Optional: Clear input fields
-        if (emailRef.current) emailRef.current.value = "";
-        if (passwordRef.current) passwordRef.current.value = "";
-        if (firstNameRef.current) firstNameRef.current.value = "";
-        if (lastNameRef.current) lastNameRef.current.value = "";
-        if (dobRef.current) dobRef.current.value = "";
-        if (genderRef.current) genderRef.current.value = "";
-        if (countryRef.current) countryRef.current.value = "";
+        if (!formData.email && !formData.password && !formData.firstName && !formData.lastName && !formData.dob && !formData.gender && !formData.country) {
+            toast(
+                {
+                    variant: "destructive",
+                    title: "Invalid!",
+                    description: "You did not provide all information!",
+                })
+        }
+        if (signup) {
+            try {
+                const response = await fetch('http://localhost:3000/api/signin', { method: 'POST', headers: { 'Content-Type': 'appliction/json' }, body: JSON.stringify(formData) })
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    console.error('Error:', error.error || 'Something went wrong');
+                    if (error.details) {
+                        console.error('Validation Errors:', error.details);
+                    }
+                    return;
+                }
+                const data = await response.json();
+                if (data.details) {
+                    toast(
+                        {
+                            variant: "destructive",
+                            title: "Invalid!",
+                            description: data.details.map((v: any, index: number) => <small key={index} style={{ display: 'block' }}>{v.message}</small>),
+                        })
+                } else if (data.success) {
+                    toast(
+                        {
+                            title: "Success!",
+                            description: "Signed Up Successfully!"
+                        })
+
+                    // Optional: Clear input fields
+                    if (emailRef.current) emailRef.current.value = "";
+                    if (passwordRef.current) passwordRef.current.value = "";
+                    if (firstNameRef.current) firstNameRef.current.value = "";
+                    if (lastNameRef.current) lastNameRef.current.value = "";
+                    if (dobRef.current) dobRef.current.value = "";
+                    if (genderRef.current) genderRef.current.value = "";
+                    if (countryRef.current) countryRef.current.value = "";
+                }
+            } catch (err) {
+                console.error('Fetch error:', err)
+            }
+        }
     }
 
     const specifyGender = (gender: string) => {
