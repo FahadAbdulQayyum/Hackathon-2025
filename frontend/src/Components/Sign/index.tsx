@@ -73,7 +73,6 @@ const Sign: React.FC<SignProps> = ({ signup }) => {
             try {
                 // const response = await fetch('http://localhost:3000/api/signup', { method: 'POST', headers: { 'Content-Type': 'appliction/json' }, body: JSON.stringify(formData) })
                 const response = await fetch(`${URL}/api/signup`, { method: 'POST', headers: { 'Content-Type': 'appliction/json' }, body: JSON.stringify(formData) })
-                console.log('...response....', response);
 
                 if (!response.ok) {
                     const error = await response.json();
@@ -91,9 +90,7 @@ const Sign: React.FC<SignProps> = ({ signup }) => {
                     return;
                 }
                 const data = await response.json();
-                console.log('...data....', data);
                 if (data.details) {
-                    console.log('...data.details...');
                     toast(
                         {
                             variant: "destructive",
@@ -116,6 +113,7 @@ const Sign: React.FC<SignProps> = ({ signup }) => {
                     if (genderRef.current) genderRef.current.value = "";
                     if (countryRef.current) countryRef.current.value = "";
                 }
+
                 setLoading(false);
                 await router.push('/Sign/In')
             } catch (err) {
@@ -140,6 +138,14 @@ const Sign: React.FC<SignProps> = ({ signup }) => {
                                 description: error.details.map((v: any, index: number) => <small key={index} style={{ display: 'block' }}>{v.message}</small>),
                             })
                         setLoading(false);
+                    } else if (!error.sucess) {
+                        toast(
+                            {
+                                variant: "destructive",
+                                title: "Invalid!",
+                                description: error.msg,
+                            })
+                        setLoading(false);
                     }
                     return;
                 }
@@ -160,7 +166,6 @@ const Sign: React.FC<SignProps> = ({ signup }) => {
                         description: resp.msg
                     })
                 setLoading(false)
-                console.log('...resp.data...', resp.data)
                 dispatch(initializeUserInfo(resp.data[0]));
                 await router.push('/')
             } catch (err) {
@@ -171,7 +176,6 @@ const Sign: React.FC<SignProps> = ({ signup }) => {
     }
 
     const specifyGender = (gender: string) => {
-        console.log('gender...', gender);
         setGender(gender)
     }
 
@@ -260,6 +264,7 @@ const Sign: React.FC<SignProps> = ({ signup }) => {
                     </Button>
                     : <button
                         className="bg-black w-full max-w-md text-white py-2 rounded uppercase"
+                        type="submit"
                     >{signup ? "Join Us" : "Sign in"}</button>}
                 <div className="flex text-sm text-gray-400">
                     <p>{signup ? "Already a Member?" : "Not a Member?"}</p>
