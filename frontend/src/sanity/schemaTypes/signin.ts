@@ -1,7 +1,7 @@
 export default {
-    name: 'username',
+    name: 'signin',
     type: 'document',
-    title: 'User Name',
+    title: 'Sign In',
     fields: [
         // {
         //     name: 'id',
@@ -17,6 +17,31 @@ export default {
             name: 'firstname',
             type: 'string',
             title: 'First Name',
+        },
+        {
+            name: 'lastname',
+            type: 'string',
+            title: 'Last Name',
+        },
+        {
+            name: 'country',
+            type: 'string',
+            title: 'Country',
+        },
+        {
+            name: 'dob',
+            type: 'string',
+            title: 'DOB',
+        },
+        {
+            name: 'gender',
+            type: 'string',
+            title: 'Gender',
+        },
+        {
+            name: 'signup',
+            type: 'boolean',
+            title: 'Sign Up',
         },
         {
             name: 'password',

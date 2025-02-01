@@ -1,8 +1,106 @@
+"use client"
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { BsInboxFill } from "react-icons/bs";
 import { IoLocationOutline } from "react-icons/io5";
+import { IoCard } from "react-icons/io5";
+
+import { useToast } from "@/hooks/use-toast"
+
+import { useSelector } from 'react-redux'
+import { RootState } from '../lib/store'
+// import { dataTypeInnerOuter } from "@/app/services/[id]/page";
+import { CartState } from "../lib/features/cart/cartSlice";
+import { urlFor } from "@/sanity/lib/image";
+import { UserInfo } from "../lib/features/userInfo/userInfoSlice";
+import { client } from "@/sanity/lib/client";
+
+
+// interface cartType {
+//     // products: dataTypeInnerOuter,
+//     obj: dataTypeInnerOuter,
+//     day: string,
+//     hour: string
+
+// }
 
 const CheckoutComponent = () => {
+
+    const { toast } = useToast()
+    // const [cartInfo, setCartInfo] = useState<cartType[]>([])
+    // const [cartInfo, setCartInfo] = useState<CartState[]>([])
+    const [cartInfo, setCartInfo] = useState<CartState[]>([])
+
+    const cart = useSelector((state: RootState) => state.cart);
+    useEffect(() => {
+        const { productName } = cart.obj
+        console.log('...cart...', cart);
+        // setCartInfo({ obj: cart.obj, day: cart.day, hour: cart.hour })
+        // setCartInfo([{ obj: cart.obj, day: cart.day, hour: cart.hour }])
+        setCartInfo([{ obj: { productName }, day: cart.day, hour: cart.hour }])
+    }, [cart])
+
+    // if (cartInfo.length > 0) {
+    //     // return console.log('...v...', cartInfo)
+    //     return console.log('...v...', cartInfo[0].obj.productName)
+    // }
+
+    // if (!cartInfo[0]?.obj) {
+    //     return <div className="loader absolute left-0 ml-2 border-t-2 border-b-2 border-blue-500 rounded-full w-6 h-6 animate-spin"></div>;
+    // }
+
+    const userInfo: UserInfo | null = useSelector((state: RootState) => state.userInfo.userInfo);
+
+    const submitCart = async () => {
+        const allInOne = {
+            name: userInfo?.firstname + " " + userInfo?.lastname,
+            city_available: "Karachi",
+            price: cartInfo[0]?.obj?.productName[0]?.price,
+            agent_chosen: "I'm",
+            time: cartInfo[0]?.day + " - " + cartInfo[0]?.hour,
+            selected_services_list: cartInfo[0]?.obj?.productName
+        };
+        console.log('...., submited Cart ,...', allInOne)
+        const result = await client.create({
+            _type: "job",
+            ...allInOne
+        });
+        toast(
+            {
+                title: "Succssfully!",
+                description: "Your cart added successfully!",
+            })
+    }
+
+    const payBill = async () => {
+        // setLoading(true);
+        const products = cartInfo[0]?.obj?.productName.map(v => ({
+            name: v.name,
+            price: v.price,
+            quantity: 1,
+            image: urlFor(v?.pic)?.url()
+        }))
+        try {
+            const response = await fetch("/api/checkout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ products }),
+            });
+
+            const data = await response.json();
+            if (data.url) {
+                window.location.href = data.url; // Redirect to Stripe Checkout
+            } else {
+                alert("Payment failed!");
+            }
+        } catch (error) {
+            console.error("Checkout error:", error);
+        } finally {
+            // setLoading(false);
+        }
+    }
+    // }
+
     return (
         <div className="flex flex-col">
             <div className="flex flex-col lg:flex-row p-6 space-x-12">
@@ -15,7 +113,15 @@ const CheckoutComponent = () => {
                         of clearing customs (including sharing it with customs officials) for all orders and returns. If your KYC does not match your shipping
                         address, please click the link for more information. Learn More
                     </p>
-                    <button className="flex border-2 border-black rounded w-full py-3 font-bold text-start px-5">
+                    <button className="flex border-2 border-black rounded w-full py-3 font-bold text-start px-5 items-center"
+                        onClick={payBill}
+                    >
+                        <IoCard />
+                        <p className="ml-2">Pay</p>
+                    </button>
+                    <button className="flex border-2 border-black rounded w-full py-3 font-bold text-start px-5 items-center"
+                        onClick={submitCart}
+                    >
                         <BsInboxFill />
                         <p className="ml-2">Deliver it</p>
                     </button>
@@ -92,7 +198,29 @@ const CheckoutComponent = () => {
 
                 {/* Right Section: Order Summary */}
                 <div className="w-full lg:w-[40%] mt-6 lg:mt-0">
-                    <h1 className="font-bold mb-4">Order Summary</h1>
+                    {cartInfo && cartInfo?.map((v, i) =>
+                        <div key={i}>
+                            <h1 className="font-bold mb-4">Order Summary</h1>
+                            <div className="flex w-full justify-between">
+                                <p>Subtotal</p>
+                                <p>₹ {v?.obj?.productName[0]?.price}</p>
+                            </div>
+                            <div className="flex w-full justify-between">
+                                <p>Delivery & Shipping</p>
+                                <p>Free</p>
+                            </div>
+                            <div className="border-b w-full h-1 my-4"></div>
+                            <div className="flex w-full justify-between">
+                                <p>Total</p>
+                                <p>₹ {v?.obj?.productName[0]?.price}</p>
+                            </div>
+                            <div className="border-b w-full h-1 my-4"></div>
+
+                            <p className="text-sm">(The total reflects the price of your order, including all duties and taxes)</p>
+                        </div>
+                    )}
+
+                    {/* <h1 className="font-bold mb-4">Order Summary</h1>
                     <div className="flex w-full justify-between">
                         <p>Subtotal</p>
                         <p>₹ 20,890.00</p>
@@ -108,10 +236,37 @@ const CheckoutComponent = () => {
                     </div>
                     <div className="border-b w-full h-1 my-4"></div>
 
-                    <p className="text-sm">(The total reflects the price of your order, including all duties and taxes)</p>
+                    <p className="text-sm">(The total reflects the price of your order, including all duties and taxes)</p> */}
 
                     {/* Delivery Information */}
-                    <div>
+                    {cartInfo !== null && cartInfo[0]?.obj !== null && cartInfo[0]?.obj.productName.map((v, i) =>
+                        <div key={i}>
+                            <h1 className="font-bold py-2">Arrives Mon, 27 Mar - Wed, 12 Apr</h1>
+                            <div className="flex">
+                                <Image
+                                    src={urlFor(v?.pic)?.url()}
+                                    alt="Bendat" width={120} height={120} className="bg-transparent" />
+                                <div className="ml-2">
+                                    {/* <p className="text-sm">Bendat Dri-FIT ADV TechK qnit Ultra Men&apos;s Short-Sleeve Running Top</p> */}
+                                    <p className="text-sm">{v.name}</p>
+                                    <p className="text-gray-400 text-sm">Qty: 1</p>
+                                    <p className="text-gray-400 text-sm">Size: L</p>
+                                    <p className="text-gray-400 text-sm">₹ 3,895.00</p>
+                                </div>
+                            </div>
+                            {/* <div className="flex mt-4">
+                                <Image src="/assets/best-Bendat-3.svg" alt="Bendat" width={120} height={120} className="bg-transparent" />
+                                <div className="ml-2">
+                                    <p className="text-sm">Bendat Dri-FIT ADV TechKnit Ultra Men&apos;s Short-Sleeve Running Top</p>
+                                    <p className="text-gray-400 text-sm">Qty: 1</p>
+                                    <p className="text-gray-400 text-sm">Size: L</p>
+                                    <p className="text-gray-400 text-sm">₹ 3,895.00</p>
+                                </div>
+                            </div> */}
+                        </div>
+                    )}
+
+                    {/* <div>
                         <h1 className="font-bold py-2">Arrives Mon, 27 Mar - Wed, 12 Apr</h1>
                         <div className="flex">
                             <Image src="/assets/gearup-1.svg" alt="Bendat" width={120} height={120} className="bg-transparent" />
@@ -131,7 +286,8 @@ const CheckoutComponent = () => {
                                 <p className="text-gray-400 text-sm">₹ 3,895.00</p>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
+
                 </div>
             </div>
             <div
