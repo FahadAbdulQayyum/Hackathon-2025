@@ -21,6 +21,7 @@ const UpperBanner = () => {
     const loading = useSelector((state: RootState) => state.loading.loading);
 
     useEffect(() => {
+        console.log('Current ENV is', process.env.NODE_ENVV)
         setIsHydrated(true); // Mark hydration as complete
 
         const fetchUserInfo = async () => {
@@ -52,6 +53,7 @@ const UpperBanner = () => {
 
     useEffect(() => {
         const handleRedirect = async () => {
+
             const lastAttemptedRoute = sessionStorage.getItem("lastRoute") || "/"; // Default fallback
             if (isFetched) {
                 if (userInfo) {
