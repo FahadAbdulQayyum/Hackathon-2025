@@ -9,6 +9,14 @@ import { initializeUserInfo, UserInfo } from "../lib/features/userInfo/userInfoS
 import { RiLogoutCircleLine } from "react-icons/ri";
 import { useRouter } from "next/navigation";
 
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+
+// import getConfig from 'next/config'
+
+// const { publicRuntimeConfig } = getConfig()
+// const { DEV, NEXT_PUBLIC_NODE_ENV } = publicRuntimeConfig
+
 const UpperBanner = () => {
     const dispatch = useAppDispatch();
     const router = useRouter();
@@ -20,8 +28,34 @@ const UpperBanner = () => {
 
     const loading = useSelector((state: RootState) => state.loading.loading);
 
+    const envColor =
+        process.env.NEXT_PUBLIC_ENV === "DEV" || process.env.NEXT_PUBLIC_ENV === "dev"
+            ? "bg-pink-600"
+            : process.env.NEXT_PUBLIC_ENV === "uat" || process.env.NEXT_PUBLIC_ENV === "UAT"
+                ? "bg-red-600"
+                : "bg-purple-600";
+
+    const envColorBorder =
+        process.env.NEXT_PUBLIC_ENV === "DEV" || process.env.NEXT_PUBLIC_ENV === "dev"
+            ? "border-pink-600"
+            : process.env.NEXT_PUBLIC_ENV === "beta" || process.env.NEXT_PUBLIC_ENV === "BETA"
+                ? "border-red-600"
+                : "border-purple-600";
+
+
+    const [isOpen, setIsOpen] = useState(false);
+
     useEffect(() => {
-        console.log('Current ENV is', process.env.NODE_ENVV)
+        if (isOpen) {
+            const timer = setTimeout(() => setIsOpen(false), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen]);
+
+
+
+    useEffect(() => {
+        console.log('Current ENV is', process.env.NEXT_PUBLIC_ENV, envColor, envColor.slice(3))
         setIsHydrated(true); // Mark hydration as complete
 
         const fetchUserInfo = async () => {
@@ -85,7 +119,26 @@ const UpperBanner = () => {
                     style={{ width: `${loaderWidth}%` }}
                 ></span>
             )}
+            {/* <div
+                className="bg-white text-black text-xl fixed bottom-0 right-0 border-l-4 border-orange-400"
+            >{process.env.NEXT_PUBLIC_ENV}
+            </div> */}
+            <div className="fixed top-2 -right-6">
+                {!isOpen && (
+                    <Button onClick={() => setIsOpen(true)} className={`${envColor} text-white hover:${envColor}`}>                        |
 
+                    </Button>
+                )}
+                <motion.div
+                    initial={{ x: "100%" }}
+                    animate={{ x: isOpen ? 0 : "100%" }}
+                    exit={{ x: "100%" }}
+                    transition={{ type: "tween", duration: 0.5 }}
+                    className={`fixed top-2 right-0 bg-white text-black text-xl border-l-4 ${envColorBorder} p-1 shadow-lg`}
+                >
+                    {process.env.NEXT_PUBLIC_ENV}
+                </motion.div>
+            </div>
             {/* Left Portion */}
             <div className="left-portion flex justify-center md:justify-start mb-2 md:mb-0">
                 <img src="/assets/salon.png" alt="Bendat logo" className="w-10 h-10" />
@@ -124,7 +177,7 @@ const UpperBanner = () => {
                     )}
                 </ul>
             </div>
-        </div>
+        </div >
     );
 };
 
